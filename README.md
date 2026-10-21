@@ -167,8 +167,8 @@ Berkas penting:
 ### Clone dan instalasi
 
 ```sh
-git clone https://github.com/silvio-l/ki-einfach-verstehen-website.git
-cd ki-einfach-verstehen-website
+git clone https://github.com/AfifaAz/Lingovela.git
+cd Lingovela
 pnpm install
 ```
 
