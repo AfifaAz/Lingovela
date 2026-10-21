@@ -1,0 +1,8 @@
+allowBuilds:
+  esbuild: true
+blockExoticSubdeps: true
+# 1 day, not the suggested 7 (10080): this package's own fast-moving Vite/Astro
+# toolchain transitive deps routinely have no resolvable version older than a
+# few days, so 10080 leaves no valid resolution on most days (verified locally).
+minimumReleaseAge: 1440 # nosemgrep: package_managers.pnpm.pnpm-missing-minimum-release-age.pnpm-minimum-release-age
+trustPolicy: no-downgrade

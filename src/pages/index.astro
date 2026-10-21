@@ -1,0 +1,18 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import LingovelaHero from '../components/LingovelaHero.astro';
+import LingovelaLearningGame from '../components/LingovelaLearningGame.astro';
+import LingovelaChatbot from '../components/LingovelaChatbot.astro';
+
+const description = 'Belajar bahasa Spanyol dari dasar dengan Lingovela. Pelajaran bertahap, contoh percakapan, dan penjelasan yang mudah dipahami dalam bahasa Indonesia.';
+---
+
+<SiteLayout
+	title="Lingovela — Belajar bahasa Spanyol dalam bahasa Indonesia"
+	description={description}
+	sources={['src/pages/index.astro', 'src/components/LingovelaHero.astro', 'src/components/LingovelaLearningGame.astro', 'src/data/lingovela-curriculum.ts', 'lessons/Español']}
+>
+	<LingovelaHero />
+	<LingovelaLearningGame />
+	<LingovelaChatbot />
+</SiteLayout>

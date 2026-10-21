@@ -1,0 +1,152 @@
+---
+interface Props {
+	ctaHref?: string;
+}
+
+const { ctaHref } = Astro.props;
+---
+
+<nav class="site-nav" aria-label="Navigasi utama">
+	<div class="nav-inner">
+		<a class="brand" href="/" aria-label="Lingovela, beranda">
+			<span class="brand-mark lingovela-mark" aria-hidden="true">¡</span>
+			<span class="brand-word lingovela-word">lingovela</span>
+		</a>
+		<div class="nav-links">
+			<a class="nav-anchor" href="#pelajaran">Pelajaran</a>
+			<a class="nav-anchor nav-community" href="#tanya-lingo">Tanya Lingo</a>
+			{ctaHref && <a class="btn btn-primary btn-nav" href={ctaHref}>Mulai belajar</a>}
+		</div>
+	</div>
+</nav>
+
+<style>
+	.site-nav {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		background: var(--ground-zone);
+		border-bottom: 1px solid var(--petrol-deep);
+	}
+
+	@media print {
+		.site-nav {
+			display: none;
+		}
+	}
+
+	.nav-inner {
+		display: flex;
+		align-items: center;
+		gap: var(--sp-md);
+		height: var(--nav-h);
+		width: var(--shell);
+		margin-inline: auto;
+	}
+
+	.brand {
+		--cap-ratio: 0.701;
+		--overshoot: 1.32;
+		--gap-ratio: 0.3;
+		--fs: 1.5rem;
+		--cap: calc(var(--fs) * var(--cap-ratio));
+		--mark-h: calc(var(--cap) * var(--overshoot));
+		--gap: calc(var(--cap) * var(--gap-ratio));
+		--shift: calc(var(--cap) * (var(--overshoot) - 1) / 2);
+		display: flex;
+		align-items: baseline;
+		gap: var(--gap);
+		margin-right: auto;
+		color: var(--ink);
+		text-decoration: none;
+	}
+
+	.brand-mark {
+		display: block;
+		width: calc(var(--mark-h) * 0.7046);
+		height: var(--mark-h);
+		transform: translateY(var(--shift));
+	}
+
+	.lingovela-mark {
+		display: grid;
+		place-items: center;
+		border-radius: 50% 50% 50% 15%;
+		background: var(--petrol-deep);
+		color: var(--ground-page);
+		font-family: var(--font-serif);
+		font-size: 1.6rem;
+		font-weight: 700;
+	}
+
+	.lingovela-word {
+		font-weight: 700;
+		letter-spacing: -0.04em;
+	}
+
+	.brand-word {
+		font-family: var(--font-serif);
+		font-size: var(--fs);
+		font-weight: 500;
+		line-height: 1;
+		white-space: nowrap;
+	}
+
+	.nav-links {
+		display: flex;
+		align-items: center;
+		gap: var(--sp-md);
+	}
+
+	.nav-anchor {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--hit-min);
+		color: var(--petrol-deep);
+		font-size: 1rem;
+		font-weight: 500;
+		text-decoration: none;
+	}
+
+	.nav-anchor:hover {
+		text-decoration: underline;
+		text-underline-offset: 5px;
+		text-decoration-thickness: 1.5px;
+	}
+
+	.btn-nav {
+		padding: 9px 22px;
+		font-size: 1rem;
+		white-space: nowrap;
+	}
+
+	@media (max-width: 1120px) {
+		.nav-anchor {
+			display: none;
+		}
+	}
+
+	@media (max-width: 780px) {
+		.brand-word {
+			display: inline;
+		}
+	}
+
+	@media (max-width: 460px) {
+		.nav-inner,
+		.nav-links {
+			gap: var(--sp-sm);
+		}
+
+		.btn-nav {
+			padding: 9px 16px;
+			font-size: 0.85rem;
+		}
+	}
+
+	@media (max-width: 420px) {
+		.btn-nav {
+			display: none;
+		}
+	}
+</style>

@@ -1,0 +1,459 @@
+/* Leuchtkern design tokens — verbatim from packages/website/DESIGN.md.
+   Keep this file and DESIGN.md's frontmatter in sync by hand until a
+   token-generation build step exists. */
+:root {
+	--ground-page: #ffffff;
+	--ground-zone: #d7ece7;
+	--hero-0: #0c5049;
+	--hero-34: #073b36;
+	--hero-62: #042723;
+	--hero-100: #021613;
+
+	--ink: #1b1a17;
+	--ink-muted: #55524a;
+
+	--line: #dad6cb;
+	--line-deep: #b8b3a5;
+
+	--petrol: #0e7469;
+	--petrol-deep: #0a5148;
+	--petrol-soft: #d7ece7;
+	--petrol-viv: #12907f;
+
+	--amber: #986816;
+	--amber-deep: #62430e;
+	--amber-soft: #fbf2e0;
+	--amber-viv: #aa7418;
+
+	--success: var(--petrol-deep);
+	--error: #a8431f;
+	--focus: var(--petrol-viv);
+
+	/* Surface helpers that must differ per theme. `--on-dark-*` are constants
+	   for the always-dark hero/footer; they never flip. */
+	--zone-hover: #cbe5df;
+	--glass: rgba(255, 255, 255, 0.55);
+	--figure-bg: linear-gradient(145deg, #ffffff, #d7ece7);
+	--on-dark-fill: #ffffff;
+	--on-dark-ink: #0a5148;
+	/* Text, lines and tints on the always-dark hero/footer ground: the
+	   petrol-soft family as constants, so they keep working when
+	   --petrol-soft itself flips in the dark reading theme. Alphas keep each
+	   tier ≥ 4.5:1 against the gradient stop it sits over (DESIGN.md §6
+	   "Footer link tiers"). */
+	--on-dark-soft: #d7ece7;
+	--on-dark-mint: #d8f4ea; /* = corehot-edge: ledes, taglines, light hover fill */
+	--on-dark-quiet: rgba(215, 236, 231, 0.72);
+	--on-dark-quietest: rgba(215, 236, 231, 0.6);
+	--on-dark-line: rgba(215, 236, 231, 0.38);
+	--on-dark-hairline: rgba(215, 236, 231, 0.16);
+	--on-dark-hover: rgba(215, 236, 231, 0.14);
+
+	/* Form controls (forms.css; shared with the community board through
+	   packages/community/scripts/sync-tokens.sh). One control language for
+	   every input on both sites: 48px+ tall (touch target ≥ 44px), a calm
+	   1.5px hairline that darkens on hover, the site-wide petrol-viv focus
+	   ring, and an error state that never relies on colour alone. */
+	--field-h: 2.75rem;
+	--field-pad-x: 0.875rem;
+	--field-radius: var(--r-md);
+	--field-border-w: 1.5px;
+	--field-bg: #ffffff;
+	--field-bg-disabled: #f1f5f4;
+	--field-border: #8c8778; /* 3.6:1 on field-bg (WCAG 1.4.11) */
+	--field-border-hover: var(--petrol);
+	--field-border-focus: var(--petrol-deep);
+	--field-placeholder: #77736a;
+	--field-error-bg: #fdf3ef;
+	--check-size: 1.375rem;
+	--check-radius: 6px;
+	--check-mark: #ffffff;
+	--form-gap: var(--sp-md);
+	--form-measure: 34rem;
+
+	/* Minimum hit area for any tap target (WCAG 2.5.5 / Apple HIG). Compact
+	   pills keep their visual size and extend the hit area with an ::after
+	   layer: inset: min(0px, calc(50% - var(--hit-min) / 2)). */
+	--hit-min: 44px;
+
+	--font-serif: 'Literata', Georgia, serif;
+	--font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+
+	--r-sm: 8px;
+	--r-md: 12px;
+	--r-lg: 16px;
+	--r-xl: 20px;
+	--r-pill: 999px;
+
+	--sp-xs: 8px;
+	--sp-sm: 16px;
+	--sp-md: 24px;
+	--sp-lg: 32px;
+	--sp-xl: 48px;
+	--sp-2xl: 80px;
+	--sp-3xl: 112px;
+
+	/* THE content edge: one fluid container definition shared by every
+	   section (nav row, hero, section heads, card grid, spotlight), so the
+	   left/right content edges form a single continuous line — and an
+	   elastic one: it grows with the viewport (92vw) up to 1880px instead
+	   of pinning wide monitors to a narrow centered column. Long-form text
+	   blocks set their own local reading measure *inside* this container. */
+	--shell: min(92vw, 1880px);
+
+	/* Height of the sticky nav bar (Nav.astro). Single source of truth for
+	   everything that must clear it: sticky rail offsets, the reading-progress
+	   hairline, and anchor scroll margins. */
+	--nav-h: 64px;
+
+	color-scheme: light;
+
+	/* Baseline scale (2026-08-20): the nominal rem ramp renders 18% larger
+	   site-wide — 1rem ≈ 18.9px, body (1.125rem) ≈ 21px. The DESIGN.md scale
+	   tiers stay nominal ("18" = 1.125rem); this root factor is the decided
+	   default reading size on top of them. */
+	font-size: 118%;
+}
+
+/* Dark reading theme (set by the PageShell head script from the stored
+   choice `kev:theme`, else the system preference). Warm-neutral near-black with
+   a petrol tint instead of pure black, off-white text (≈ 14:1) so long reading
+   sessions stay comfortable. Hero and footer are dark in both themes. */
+:root[data-theme='dark'] {
+	--ground-page: #0f1514;
+	--ground-zone: #17302c;
+	--ink: #e9e7e0;
+	--ink-muted: #b4b1a7;
+	--line: #2a3532;
+	--line-deep: #435049;
+	--petrol: #4fb8a8;
+	--petrol-deep: #7fd3c4;
+	--petrol-viv: #3fb5a3;
+	--amber: #d9a23f;
+	--amber-deep: #f0c46f;
+	--amber-soft: #2d2512;
+	--amber-viv: #d9a03a;
+	/* Zone-like tint (= dark ground-zone): petrol-deep text on it 8.04:1,
+	   ink 11.35:1, ink-muted 6.54:1. */
+	--petrol-soft: #17302c;
+	--error: #f0997a;
+	--zone-hover: #1f3f39;
+	--glass: rgba(255, 255, 255, 0.08);
+	--figure-bg: linear-gradient(145deg, #f4f8f7, #d7ece7);
+	--field-bg: #141c1b;
+	--field-bg-disabled: #1a2321;
+	--field-border: #66756f; /* 3.6:1 on field-bg */
+	--field-border-hover: var(--petrol);
+	--field-border-focus: var(--petrol-deep);
+	--field-placeholder: #8f8b81;
+	--field-error-bg: #2a1a14;
+	--check-mark: #0f1514;
+	color-scheme: dark;
+}
+
+html[data-brand='lingovela'] {
+	--ground-zone: #fff0eb;
+	--hero-0: #8f2030;
+	--hero-34: #641722;
+	--hero-62: #3d111a;
+	--hero-100: #210a10;
+	--petrol: #d63b4a;
+	--petrol-deep: #a92638;
+	--petrol-soft: #fff0eb;
+	--petrol-viv: #ef5360;
+	--amber: #946100;
+	--amber-deep: #674400;
+	--amber-soft: #fff3cd;
+	--amber-viv: #ffcf55;
+	--focus: #a92638;
+	--zone-hover: #ffe2da;
+	--on-dark-ink: #681522;
+	--on-dark-soft: #ffe8df;
+	--on-dark-mint: #fff1d7;
+	--on-dark-quiet: rgb(255 232 223 / 78%);
+	--on-dark-quietest: rgb(255 232 223 / 68%);
+	--on-dark-line: rgb(255 232 223 / 42%);
+	--on-dark-hairline: rgb(255 232 223 / 18%);
+	--on-dark-hover: rgb(255 232 223 / 14%);
+	--success: #237451;
+	--error: #a92638;
+}
+
+:root[data-theme='dark'][data-brand='lingovela'] {
+	--ground-zone: #321b20;
+	--petrol: #f0767e;
+	--petrol-deep: #ffb8b6;
+	--petrol-soft: #321b20;
+	--petrol-viv: #ff8388;
+	--amber: #f0c46f;
+	--amber-deep: #ffe1a0;
+	--amber-soft: #382c16;
+	--focus: #ffcf55;
+	--zone-hover: #48262c;
+	--field-bg: #1b1416;
+	--field-bg-disabled: #282022;
+	--field-border: #82666a;
+	--field-border-hover: var(--petrol);
+	--field-border-focus: var(--petrol-deep);
+	--field-error-bg: #321b20;
+	--check-mark: #1b1416;
+}
+
+/* Reader-selectable extra text size (nav toggle, localStorage
+   `kev:text-size`): one more step above the raised baseline (≈ +15%).
+   Scaling the root font-size scales the entire rem-based type ramp at once,
+   while the px-based spacing/radius tokens and the vw/px shell stay put.
+   Orthogonal to the Legibility Floor — this raises sizes above it, never
+   below. */
+:root[data-text-size='large'] {
+	font-size: 136%;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+* {
+	margin: 0;
+	padding: 0;
+}
+/* Components set display (flex, inline-flex, grid); the hidden attribute must still win. */
+[hidden] {
+	display: none !important;
+}
+html {
+	-webkit-text-size-adjust: 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+body {
+	background: var(--ground-page);
+	color: var(--ink);
+	font-family: var(--font-sans);
+	font-size: 1.125rem;
+	line-height: 1.7;
+	font-weight: 400;
+}
+img,
+svg {
+	max-width: 100%;
+}
+a {
+	color: var(--petrol-deep);
+}
+:focus-visible {
+	outline: 2px solid var(--petrol-viv);
+	outline-offset: 3px;
+	border-radius: 4px;
+}
+
+h1,
+h2 {
+	font-family: var(--font-serif);
+	font-weight: 700;
+	color: var(--ink);
+	text-wrap: balance;
+}
+h2 {
+	font-size: clamp(1.75rem, 3vw, 2.5rem);
+	line-height: 1.1;
+	letter-spacing: -0.01em;
+}
+
+.skip-link {
+	position: absolute;
+	left: -9999px;
+	top: 0;
+	background: var(--ground-page);
+	color: var(--petrol-deep);
+	padding: 10px 20px;
+	z-index: 99;
+	font-weight: 600;
+	border-radius: 0 0 var(--r-md) 0;
+}
+.skip-link:focus {
+	left: 0;
+}
+
+/* See --shell above: one elastic content edge for all sections. */
+.wrap {
+	width: var(--shell);
+	margin-inline: auto;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+.eyebrow {
+	font-family: var(--font-sans);
+	font-size: 0.75rem;
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	line-height: 1.4;
+	text-transform: uppercase;
+	color: var(--petrol-deep);
+}
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	font-family: var(--font-sans);
+	font-size: 1.05rem;
+	font-weight: 600;
+	line-height: 1.3;
+	border-radius: var(--r-pill);
+	padding: 14px 32px;
+	text-decoration: none;
+	cursor: pointer;
+	border: 1.5px solid transparent;
+	transition:
+		background-color 0.18s ease,
+		color 0.18s ease,
+		border-color 0.18s ease,
+		transform 0.18s ease;
+}
+.btn-primary {
+	background: var(--petrol-deep);
+	color: var(--ground-page);
+	border-color: var(--petrol-deep);
+}
+.btn-primary:hover {
+	background: var(--petrol);
+	border-color: var(--petrol);
+}
+.btn-secondary {
+	background: transparent;
+	color: var(--petrol-deep);
+	border-color: var(--petrol-deep);
+}
+.btn-secondary:hover {
+	background: var(--ground-zone);
+}
+/* Hero (dark ground) adaptations — petrol-deep fill would vanish there. */
+.btn-on-dark-primary {
+	background: var(--on-dark-fill);
+	color: var(--on-dark-ink);
+	border-color: var(--on-dark-fill);
+}
+.btn-on-dark-primary:hover {
+	background: var(--on-dark-mint);
+	border-color: var(--on-dark-mint);
+}
+.btn-on-dark-secondary {
+	background: transparent;
+	color: var(--on-dark-soft);
+	border-color: var(--on-dark-soft);
+}
+.btn-on-dark-secondary:hover {
+	background: var(--on-dark-hover);
+}
+/* Pressed: a one-pixel settle, plus the deep fill again for the primary
+   (its hover lightens it), so a tap reads as a press on touch screens too. */
+.btn:active {
+	transform: translateY(1px);
+}
+.btn-primary:active {
+	background: var(--petrol-deep);
+	border-color: var(--petrol-deep);
+}
+.btn-on-dark-primary:active {
+	background: var(--on-dark-fill);
+	border-color: var(--on-dark-fill);
+}
+
+.badge {
+	display: inline-block;
+	background: var(--ground-zone);
+	color: var(--petrol-deep);
+	font-size: 0.75rem;
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	line-height: 1.4;
+	text-transform: uppercase;
+	border-radius: var(--r-pill);
+	padding: 4px 12px;
+}
+/* Amber is scoped to progress/attention moments only — see DESIGN.md. */
+.badge-progress {
+	display: inline-block;
+	background: var(--amber-soft);
+	color: var(--amber-deep);
+	font-size: 0.75rem;
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	line-height: 1.4;
+	text-transform: uppercase;
+	border-radius: var(--r-pill);
+	padding: 4px 12px;
+}
+/* Prosocial signal, not an achievement — deliberately plain text (no pill
+   chrome, no amber) so it doesn't compete with .badge-progress. Sits on its
+   own line below the article title (not the crowded eyebrow/progress row),
+   so it carries a small line icon for a bit of visual weight in isolation. */
+.badge-helpful {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.75rem;
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	line-height: 1.4;
+	text-transform: uppercase;
+	color: var(--ink-muted);
+	margin-bottom: var(--sp-sm);
+}
+.badge-helpful-icon {
+	flex: none;
+	width: 15px;
+	height: 15px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.section {
+	padding: var(--sp-3xl) 0;
+}
+.section--zone {
+	background: var(--ground-zone);
+}
+.section-head {
+	max-width: 760px;
+}
+.section-lede {
+	margin-top: var(--sp-sm);
+	font-size: 1.125rem;
+	line-height: 1.6;
+	color: var(--ink-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-delay: 0ms !important;
+		animation-iteration-count: 1 !important;
+		/* Scroll-driven animations ignore duration — force them back to a
+		   (instantly completing) document timeline as well. */
+		animation-timeline: auto !important;
+		transition-duration: 0.001ms !important;
+		scroll-behavior: auto !important;
+	}
+}

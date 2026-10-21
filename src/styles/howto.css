@@ -1,0 +1,223 @@
+/* "So funktioniert's" / "How it works" — shared by the DE and EN page so the
+   two stay structurally identical. Sits inside StoryArticle's .prose (white
+   reading ground, 53rem measure); every value comes from tokens.css. Cards
+   on the page ground use the neutral `line` hairline (card-on-page), the one
+   zone-filled card (the start block) carries the petrol-deep border
+   (Elevation Needs A Border rule, DESIGN.md §2). */
+
+.howto-lede {
+	font-size: 1.25rem;
+	line-height: 1.6;
+	color: var(--ink);
+}
+
+/* ——— "Auf dieser Seite": numbered jump links ——— */
+.howto-toc {
+	margin-top: var(--sp-lg);
+}
+.howto-toc-title {
+	margin-bottom: var(--sp-sm);
+}
+.howto-toc ol {
+	list-style: none;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+	gap: var(--sp-xs);
+	padding: 0;
+}
+.howto-toc a {
+	display: flex;
+	align-items: center;
+	gap: 0.75em;
+	min-height: 44px;
+	height: 100%;
+	padding: 0.5em 0.9em;
+	border: 1px solid var(--line);
+	border-radius: var(--r-md);
+	background: var(--ground-page);
+	color: var(--ink);
+	font-size: 1rem;
+	font-weight: 500;
+	line-height: 1.35;
+	text-decoration: none;
+	transition:
+		background-color 0.18s ease,
+		border-color 0.18s ease,
+		color 0.18s ease;
+}
+.howto-toc a:hover {
+	background: var(--ground-zone);
+	border-color: var(--petrol-deep);
+	color: var(--petrol-deep);
+}
+.howto-toc-num,
+.howto-num {
+	font-family: var(--font-serif);
+	font-weight: 700;
+	color: var(--petrol-deep);
+	font-variant-numeric: lining-nums tabular-nums;
+	letter-spacing: 0.02em;
+	flex-shrink: 0;
+}
+.howto-toc-num {
+	min-width: 1.5em;
+}
+
+/* ——— Sections: a serif number with a short rule above each heading,
+   the same marker the start-page onboarding cards use. ——— */
+.howto-section {
+	display: flow-root; /* contains the floated illustration */
+	scroll-margin-top: calc(var(--nav-h) + var(--sp-md));
+}
+.howto-num {
+	display: flex;
+	align-items: center;
+	gap: 0.6em;
+	margin-bottom: 0.35em !important;
+	font-size: 1.1rem;
+	line-height: 1;
+}
+.howto-num::after {
+	content: '';
+	width: 28px;
+	height: 2px;
+	background: var(--petrol-deep);
+	opacity: 0.5;
+}
+
+/* Every other illustration floats left, so the page reads in a calm
+   left/right rhythm instead of a column of pictures on one edge. Below
+   760px Figure stacks the picture on its own line anyway. */
+@media (min-width: 761px) {
+	.prose .howto-alt .kev-figure--illustration {
+		float: left;
+		margin: 0.25rem 2rem 1.25rem 0;
+	}
+}
+
+/* ——— Wegkarte legend, explain modes and tool lists: small cards on the
+   page ground, symbol first, then the label the real control uses. ——— */
+.howto-markers,
+.howto-modes,
+.howto-tools {
+	list-style: none;
+	padding: 0;
+	margin: 1.2em 0 0;
+	display: grid;
+	gap: var(--sp-xs);
+}
+.howto-markers {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+.howto-markers li {
+	display: flex;
+	align-items: center;
+	gap: 0.55em;
+	min-height: 44px;
+	padding: 0.35em 0.8em;
+	border: 1px solid var(--line);
+	border-radius: var(--r-pill);
+	font-size: 1rem;
+	line-height: 1.3;
+}
+.howto-markers li .ui-sym {
+	vertical-align: middle;
+}
+
+.howto-modes {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+}
+.howto-modes li {
+	padding: var(--sp-sm);
+	border: 1px solid var(--line);
+	border-radius: var(--r-lg);
+	font-size: 1rem;
+	line-height: 1.5;
+	color: var(--ink-muted);
+}
+.howto-modes strong {
+	display: block;
+	color: var(--ink);
+	font-size: 1.125rem;
+	margin-bottom: 0.2em;
+}
+
+.howto-tools {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+.howto-tools li {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.8em;
+	padding: 0.8em var(--sp-sm);
+	border: 1px solid var(--line);
+	border-radius: var(--r-lg);
+	font-size: 1rem;
+	line-height: 1.5;
+	color: var(--ink-muted);
+}
+.howto-tools .howto-tool-syms {
+	display: inline-flex;
+	gap: 0.3em;
+	flex-shrink: 0;
+	font-size: 1.125rem;
+}
+.howto-tools .ui-sym {
+	vertical-align: middle;
+}
+.howto-tools strong {
+	display: block;
+	color: var(--ink);
+	font-weight: 600;
+}
+
+/* ——— Start block: the one zone card with the page's primary action ——— */
+.howto-start {
+	margin-top: 0.4em;
+	padding: var(--sp-md) var(--sp-lg);
+	border: 1px solid var(--petrol-deep);
+	border-radius: var(--r-xl);
+	background: var(--ground-zone);
+}
+.howto-start-meta {
+	margin-bottom: var(--sp-xs) !important;
+	color: var(--ink-muted);
+	font-size: 1rem;
+}
+.howto-start-title {
+	font-family: var(--font-serif);
+	font-weight: 700;
+	font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+	line-height: 1.2;
+	text-wrap: balance;
+	margin-bottom: var(--sp-md) !important;
+}
+.howto-start-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--sp-sm);
+	margin-bottom: var(--sp-md) !important;
+}
+.howto-start-tour {
+	padding-top: var(--sp-sm);
+	border-top: 1px solid var(--line-deep);
+	font-size: 1rem;
+	color: var(--ink-muted);
+}
+
+@media (max-width: 520px) {
+	.howto-start {
+		padding: var(--sp-md) var(--sp-sm);
+		border-radius: var(--r-lg);
+	}
+	.howto-start-actions .btn {
+		flex: 1 1 100%;
+		justify-content: center;
+	}
+}
+
+@media print {
+	.howto-toc {
+		display: none;
+	}
+}

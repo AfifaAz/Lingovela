@@ -1,0 +1,256 @@
+<div class="chatbot" id="tanya-lingo">
+	<button
+		class="chat-launcher"
+		type="button"
+		data-chat-open
+		aria-haspopup="dialog"
+		aria-controls="lingovela-chat-dialog"
+		aria-label="Buka chatbot Lingovela"
+	>
+		<span class="launcher-icon" aria-hidden="true">✦</span>
+		<span class="launcher-copy"><strong>Tanya Lingo</strong><small>Asisten belajar Spanyol</small></span>
+	</button>
+
+	<dialog class="chat-dialog" id="lingovela-chat-dialog" data-chat-dialog aria-labelledby="chat-title">
+		<header class="chat-header">
+			<div>
+				<p class="chat-eyebrow">Asisten belajar</p>
+				<h2 id="chat-title">Tanya Lingo</h2>
+			</div>
+			<button class="chat-close" type="button" data-chat-close aria-label="Tutup chatbot">×</button>
+		</header>
+
+		<div class="chat-session">
+			<div class="chat-session-bar">
+				<span>Jawaban mengacu pada materi Lingovela</span>
+			</div>
+			<div class="chat-messages" data-chat-messages role="log" aria-live="polite" aria-relevant="additions text">
+				<p class="chat-intro">Hai! Tanyakan materi bahasa Spanyol. Lingo akan mencari jawaban dalam dokumen sumber Lingovela.</p>
+			</div>
+			<form class="chat-form" data-chat-form>
+				<label class="visually-hidden" for="chat-question">Pertanyaan tentang bahasa Spanyol</label>
+				<textarea id="chat-question" rows="2" maxlength="1000" placeholder="Tulis pertanyaanmu..." required data-chat-question></textarea>
+				<button class="chat-send" type="submit" data-chat-send aria-label="Kirim pertanyaan">Kirim</button>
+			</form>
+		</div>
+		<p class="chat-disclaimer">Pertanyaan dan kutipan materi yang relevan akan dikirim ke Groq. Jawaban AI bisa keliru.</p>
+	</dialog>
+</div>
+
+<script>
+	type Source = {
+		source: string;
+		title: string;
+	};
+	type ChatMessage = { role: 'user' | 'assistant'; content: string };
+	const isChatResponse = (value: unknown): value is { answer: string; sources: Source[] } => {
+		if (!value || typeof value !== 'object' || !('answer' in value) || typeof value.answer !== 'string') return false;
+		return 'sources' in value && Array.isArray(value.sources)
+			&& value.sources.every((source) =>
+				source && typeof source === 'object'
+				&& 'source' in source && typeof source.source === 'string'
+				&& 'title' in source && typeof source.title === 'string',
+			);
+	};
+
+	const dialog = document.querySelector<HTMLDialogElement>('[data-chat-dialog]');
+	const launcher = document.querySelector<HTMLButtonElement>('[data-chat-open]');
+	const messageList = dialog?.querySelector<HTMLElement>('[data-chat-messages]');
+	const questionInput = dialog?.querySelector<HTMLTextAreaElement>('[data-chat-question]');
+	const chatForm = dialog?.querySelector<HTMLFormElement>('[data-chat-form]');
+	const sendButton = dialog?.querySelector<HTMLButtonElement>('[data-chat-send]');
+	const history: ChatMessage[] = [];
+
+	const openDialog = () => {
+		if (!dialog) return;
+		dialog.showModal();
+		launcher?.setAttribute('aria-expanded', 'true');
+		questionInput?.focus();
+	};
+
+	const closeDialog = () => {
+		dialog?.close();
+	};
+
+	const addMessage = (role: 'user' | 'assistant', text: string, sources: Source[] = []) => {
+		if (!messageList) return;
+		const article = document.createElement('article');
+		article.className = `chat-message chat-message--${role}`;
+		const label = document.createElement('strong');
+		label.textContent = role === 'user' ? 'Kamu' : 'Lingo';
+		const content = document.createElement('p');
+		content.textContent = text;
+		article.append(label, content);
+
+		if (sources.length > 0) {
+			const sourceList = document.createElement('p');
+			sourceList.className = 'chat-sources';
+			const uniqueSources = [...new Map(sources.map((item) => [item.source, item])).values()];
+			sourceList.textContent = `Acuan: ${uniqueSources.map((item) => `${item.title} (${item.source})`).join('; ')}`;
+			article.append(sourceList);
+		}
+
+		messageList.append(article);
+		messageList.scrollTop = messageList.scrollHeight;
+	};
+
+	launcher?.addEventListener('click', openDialog);
+	window.addEventListener('hashchange', () => {
+		if (location.hash === '#tanya-lingo') openDialog();
+	});
+	if (location.hash === '#tanya-lingo') openDialog();
+	dialog?.querySelector('[data-chat-close]')?.addEventListener('click', closeDialog);
+	document.addEventListener('pointerdown', (event) => {
+		if (!dialog?.open) return;
+		const bounds = dialog.getBoundingClientRect();
+		const outside = event.clientX < bounds.left || event.clientX > bounds.right
+			|| event.clientY < bounds.top || event.clientY > bounds.bottom;
+		if (outside) closeDialog();
+	}, true);
+	dialog?.addEventListener('close', () => {
+		launcher?.setAttribute('aria-expanded', 'false');
+		launcher?.focus();
+		if (location.hash === '#tanya-lingo') window.history.replaceState(null, '', `${location.pathname}${location.search}`);
+	});
+
+	chatForm?.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		const question = questionInput?.value.trim();
+		if (!question || !messageList || !sendButton) return;
+
+		questionInput.value = '';
+		addMessage('user', question);
+		sendButton.disabled = true;
+		if (questionInput) questionInput.disabled = true;
+		const pending = document.createElement('p');
+		pending.className = 'chat-pending';
+		pending.textContent = 'Lingo sedang mencari jawaban...';
+		messageList.append(pending);
+
+		try {
+			const response = await fetch('/api/chat', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					question,
+					history: history.slice(-6),
+				}),
+				signal: AbortSignal.timeout(55_000),
+			});
+			const payload: unknown = await response.json();
+			if (!response.ok) {
+				const errorMessage = payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string'
+					? payload.error
+					: `Chatbot tidak dapat menjawab (HTTP ${response.status}). Coba lagi nanti.`;
+				throw new Error(errorMessage);
+			}
+			if (!isChatResponse(payload)) throw new Error('Respons chatbot tidak valid. Coba lagi nanti.');
+
+			pending.remove();
+			addMessage('assistant', payload.answer, payload.sources);
+			history.push({ role: 'user', content: question }, { role: 'assistant', content: payload.answer });
+		} catch (error) {
+			pending.remove();
+			const message = error instanceof Error && error.name === 'TimeoutError'
+				? 'Permintaan terlalu lama. Periksa koneksi internet lalu coba lagi.'
+				: error instanceof Error
+					? error.message
+					: 'Terjadi kesalahan yang tidak diketahui. Coba lagi.';
+			addMessage('assistant', message);
+		} finally {
+			sendButton.disabled = false;
+			if (questionInput) {
+				questionInput.disabled = false;
+				questionInput.focus();
+			}
+		}
+	});
+</script>
+
+<style>
+	.chatbot {
+		position: fixed;
+		right: max(20px, env(safe-area-inset-right));
+		bottom: max(20px, env(safe-area-inset-bottom));
+		z-index: 70;
+		font-family: var(--font-sans);
+	}
+
+	.chat-launcher {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-height: 60px;
+		padding: 9px 18px 9px 10px;
+		border: 1px solid rgb(255 255 255 / 45%);
+		border-radius: 999px;
+		background: var(--petrol-deep);
+		color: #fff;
+		box-shadow: 0 8px 28px rgb(10 81 72 / 30%), 0 0 18px rgb(18 144 127 / 24%);
+		cursor: pointer;
+		transition: transform 180ms ease, box-shadow 180ms ease;
+	}
+
+	.chat-launcher:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgb(10 81 72 / 38%), 0 0 24px rgb(18 144 127 / 34%); }
+	.chat-launcher:focus-visible, .chat-close:focus-visible, .chat-send:focus-visible { outline: 3px solid #ffcf55; outline-offset: 3px; }
+	.launcher-icon { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 50%; background: #ffcf55; color: #3a2310; font-size: 1.4rem; }
+	.launcher-copy { display: grid; gap: 2px; text-align: left; }
+	.launcher-copy strong { font-size: .95rem; }
+	.launcher-copy small { color: #d8f4ea; font-size: .72rem; }
+
+	.chat-dialog {
+		position: fixed;
+		inset: auto max(20px, env(safe-area-inset-right)) max(92px, calc(env(safe-area-inset-bottom) + 76px)) auto;
+		display: flex;
+		flex-direction: column;
+		width: min(430px, calc(100vw - 32px));
+		max-height: min(720px, calc(100dvh - 120px));
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		border: 1px solid var(--line);
+		border-radius: 20px;
+		background: var(--ground-page);
+		color: var(--ink);
+		box-shadow: 0 24px 80px rgb(0 0 0 / 25%);
+	}
+
+	.chat-dialog:not([open]) { display: none; }
+	.chat-dialog[open] { animation: chat-enter 180ms ease-out both; }
+	.chat-dialog::backdrop { background: rgb(15 25 23 / 34%); backdrop-filter: blur(2px); }
+	.chat-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; background: var(--petrol-deep); color: #fff; }
+	.chat-eyebrow { margin: 0 0 3px; color: #d8f4ea; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+	.chat-header h2 { margin: 0; font-family: var(--font-serif); font-size: 1.35rem; }
+	.chat-close { width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgb(255 255 255 / 12%); color: white; font-size: 1.6rem; cursor: pointer; }
+	.chat-send { min-height: 44px; padding: 0 14px; border: 0; border-radius: 9px; background: var(--petrol-deep); color: white; font: inherit; font-weight: 700; cursor: pointer; }
+	.chat-session { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+	.chat-session-bar { display: flex; justify-content: space-between; gap: 8px; padding: 9px 18px; border-bottom: 1px solid var(--line); color: var(--ink-muted); font-size: .75rem; }
+	.chat-session-bar button { border: 0; background: none; color: var(--petrol-deep); font: inherit; font-weight: 700; cursor: pointer; }
+	.chat-messages { display: flex; flex: 1; flex-direction: column; gap: 12px; min-height: 120px; padding: 16px; overflow-y: auto; overscroll-behavior: contain; }
+	.chat-intro, .chat-pending { margin: 0; color: var(--ink-muted); font-size: .9rem; line-height: 1.55; }
+	.chat-message { max-width: 92%; padding: 11px 13px; border-radius: 14px; font-size: .9rem; line-height: 1.55; overflow-wrap: anywhere; }
+	.chat-message strong { display: block; margin-bottom: 3px; font-size: .76rem; }
+	.chat-message p { margin: 0; white-space: pre-wrap; }
+	.chat-message--user { align-self: flex-end; background: var(--petrol-deep); color: #fff; }
+	.chat-message--assistant { align-self: flex-start; background: var(--petrol-soft); color: var(--ink); }
+	.chat-message .chat-sources { margin-top: 9px; padding-top: 8px; border-top: 1px solid rgb(10 81 72 / 18%); font-size: .72rem; color: var(--ink-muted); }
+	.chat-pending { align-self: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--amber-soft); }
+	.chat-form { display: flex; align-items: flex-end; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
+	.chat-form textarea { flex: 1; min-width: 0; min-height: 46px; max-height: 120px; resize: vertical; padding: 10px 12px; border: 1px solid var(--line-deep); border-radius: 10px; font: inherit; font-size: .9rem; }
+	.chat-send:disabled { opacity: .6; cursor: wait; }
+	.chat-disclaimer { margin: 0; padding: 0 16px 12px; color: var(--ink-muted); font-size: .7rem; line-height: 1.4; }
+	.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+	@keyframes chat-enter { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+	@media (max-width: 520px) {
+		.chatbot { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); }
+		.chat-dialog { inset: auto 8px max(78px, calc(env(safe-area-inset-bottom) + 68px)) 8px; width: auto; max-height: min(78dvh, 680px); border-radius: 18px; }
+		.chat-launcher { min-height: 54px; padding-right: 13px; }
+		.launcher-icon { width: 36px; height: 36px; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.chat-dialog[open] { animation: none; }
+		.chat-launcher { transition: none; }
+	}
+</style>

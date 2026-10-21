@@ -1,0 +1,19 @@
+name: Verbesserungsvorschlag / Suggestion
+description: Eine Idee für einen Baustein, eine Grafik oder die Website. / An idea for a lesson, a graphic or the website.
+title: "[Vorschlag] "
+labels: ["vorschlag"]
+body:
+  - type: input
+    id: bereich
+    attributes:
+      label: Wo? / Where?
+      description: Baustein, Seite oder Funktion (URL oder Titel). / Lesson, page or feature (URL or title).
+    validations:
+      required: false
+  - type: textarea
+    id: vorschlag
+    attributes:
+      label: Vorschlag / Suggestion
+      description: Was würdest du dir wünschen, und warum hilft es beim Verstehen? / What would you like to see, and how does it help understanding?
+    validations:
+      required: true

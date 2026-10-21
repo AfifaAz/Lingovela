@@ -1,0 +1,203 @@
+---
+// The one brand shell every page wraps: fonts, tokens, meta, skip link, Nav
+// and Footer. SiteLayout (homepage) and ContentEntryLayout (Bausteine,
+// glossary) both build on this so the chrome can never drift apart between
+// page types.
+import '@fontsource/literata/700.css';
+import '@fontsource/literata/800.css';
+import '@fontsource/literata/600-italic.css';
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/400-italic.css';
+import '@fontsource/ibm-plex-sans/500.css';
+import '@fontsource/ibm-plex-sans/600.css';
+import '../styles/tokens.css';
+import '../styles/forms.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { MATOMO_HOSTS, MATOMO_URL, MATOMO_SITE_ID } from '../lib/matomo.ts';
+import { HEAD_SCRIPT } from '../lib/display-prefs.mjs';
+import { ADSENSE_CLIENT, ADS_ENABLED } from '../lib/ads.ts';
+import { newestCommitDate } from '../lib/last-commit.ts';
+// Hashed URLs of the two fonts every first paint waits for (body sans + the
+// heading serif). Vite content-hashes assets, so these resolve to the same
+// /_astro/ files the @fontsource CSS references; preloading lets them load in
+// parallel with the stylesheet instead of one round trip after it (LCP).
+import plexSansUrl from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url';
+import literataUrl from '@fontsource/literata/files/literata-latin-700-normal.woff2?url';
+
+interface Props {
+	lang: 'de' | 'en' | 'id';
+	title: string;
+	description: string;
+	brand?: 'lingovela';
+	/** Counterpart URL in the other language — nav pill link. Falls back to an
+	 * overview page when no real translation exists, so it's not always a
+	 * true translation and must not be asserted as one via hreflang. */
+	otherLangHref: string;
+	/** Whether otherLangHref is an actual translation of this page (vs. a
+	 * nav-pill fallback like the homepage or glossary index). Defaults to
+	 * `!noindex` -- noindex pages (stubs) never claim a translation pair.
+	 * Content layouts with real per-page counterparts (bausteine/glossar)
+	 * must pass this explicitly based on whether a counterpart was found. */
+	hasTranslation?: boolean;
+	/** Where the "Themenbereiche" nav/footer links point (homepage: local anchor). */
+	themenHref?: string;
+	/** Nav CTA target; omit to render no CTA (reading pages keep the chrome calm). */
+	ctaHref?: string;
+	ogType?: 'website' | 'article';
+	/** Stub/preview pages that shouldn't compete with the real thing in search results. */
+	noindex?: boolean;
+	/** schema.org structured data for this page (one object or a graph array),
+	 * serialized as JSON-LD. Layouts build it; see src/lib/structured-data.ts. */
+	jsonLd: Record<string, unknown>;
+	/** ISO date (YYYY-MM-DD) the page's content last changed (git history).
+	 * Emitted as dcterms.modified; scripts/sitemap-finalize.mjs turns it into
+	 * the sitemap's <lastmod> so search engines recrawl changed pages first. */
+	modified?: string;
+	/** Source files (or directories/globs) the page is built from, relative to
+	 * the package root; without an explicit `modified`, the newest commit
+	 * touching any of them dates the page. Every indexable page needs one of
+	 * the two (scripts/check-search-snippets.mjs). */
+	sources?: string[];
+	/** False for pages without a URL of their own (the 404 page, which GitHub
+	 * Pages serves for every missed path): no canonical, no hreflang. */
+	canonical?: boolean;
+	/** Page-specific social preview (e.g. a figure share page shows exactly
+	 * that graphic); defaults to the shared brand card per language. */
+	ogImage?: { url: string; width: number; height: number; alt: string };
+	/** Take the URL fragment out of the address before any other script runs
+	 * (the progress page: its import link carries the transfer code in
+	 * `#c=`, which must never reach analytics or ad scripts, ADR-0025). The
+	 * fragment is kept in `window.__kevFragment` for the page's own script. */
+	captureFragment?: boolean;
+}
+
+const { lang, title, description, otherLangHref, hasTranslation, themenHref = '#themenbereiche', ctaHref, ogType = 'website', noindex = false, jsonLd, modified: modifiedProp, sources, canonical = true, ogImage, captureFragment = false, brand } = Astro.props;
+const legacyLang = lang === 'id' ? 'de' : lang;
+const otherLang = legacyLang === 'de' ? 'en' : 'de';
+const modified = modifiedProp ?? (sources ? newestCommitDate(sources) : undefined);
+const homeHref = `/${lang}/`;
+const isTranslationPair = hasTranslation ?? !noindex;
+// Astro.url can resolve to the dev/build origin, not the production domain --
+// always build canonical/hreflang URLs off Astro.site instead.
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
+// Indexable pages without their own graph still get a minimal WebPage node.
+// "</script>" inside a string value would end the JSON-LD block early.
+const jsonLdText = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
+const otherLangUrl = new URL(otherLangHref, Astro.site).href;
+// One shared brand card per language (Hero radial ground + phyllotaxis bloom
+// + the reserved three-weight lockup, DESIGN.md §3/§4) -- not a per-page
+// generator. Swap for real per-page cards only via a documented Satori/D2
+// pipeline, not by hand-rolling more static PNGs here.
+const ogImageUrl = ogImage?.url ?? (brand ? undefined : new URL(`/og-image-${legacyLang}.jpg`, Astro.site).href);
+const ogImageAlt = ogImage?.alt ?? (brand ? 'Lingovela — belajar bahasa Spanyol' : legacyLang === 'de' ? 'KI einfach verstehen' : 'KI einfach verstehen (AI, explained clearly)');
+// x-default: the DE version when a real translation pair exists, otherwise
+// this page itself -- it's the only version that actually exists.
+const defaultLangUrl = !isTranslationPair ? canonicalUrl : legacyLang === 'de' ? canonicalUrl : otherLangUrl;
+const skipLabel = brand ? 'Langsung ke konten' : legacyLang === 'de' ? 'Zum Inhalt springen' : 'Skip to content';
+---
+
+<html lang={brand ? 'id' : lang} data-brand={brand}>
+	<head>
+		<meta charset="utf-8" />
+		{/* Stored theme and text size, applied before first paint so the page
+		    never flashes in the wrong theme or size. Reads the cookies shared
+		    with the community board first (src/lib/display-prefs.mjs). */}
+		<script is:inline set:html={HEAD_SCRIPT} />
+		{/* Runs before the analytics and ad loaders below can read location. */}
+		{captureFragment && (
+			<script is:inline>
+				(function () {
+					var h = location.hash;
+					if (h.length < 2) return;
+					window.__kevFragment = h.slice(1);
+					try {
+						history.replaceState(history.state, '', location.pathname + location.search);
+					} catch (e) {
+						/* the page script strips it again */
+					}
+				})();
+			</script>
+		)}
+		<link rel="icon" type="image/svg+xml" href="/lingovela-mark.svg" />
+		<link rel="preload" as="font" type="font/woff2" href={plexSansUrl} crossorigin="anonymous" />
+		<link rel="preload" as="font" type="font/woff2" href={literataUrl} crossorigin="anonymous" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
+		{noindex && <meta name="robots" content="noindex, follow" />}
+		{modified && <meta name="dcterms.modified" content={modified} />}
+		<meta property="og:site_name" content={brand ? 'Lingovela' : 'KI einfach verstehen'} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:type" content={ogType} />
+		<meta property="og:locale" content={brand ? 'id_ID' : legacyLang === 'de' ? 'de_DE' : 'en_US'} />
+		{canonical && <meta property="og:url" content={canonicalUrl} />}
+		{ogImageUrl && (
+			<>
+				<meta property="og:image" content={ogImageUrl} />
+				<meta property="og:image:width" content={String(ogImage?.width ?? 1200)} />
+				<meta property="og:image:height" content={String(ogImage?.height ?? 630)} />
+				<meta property="og:image:alt" content={ogImageAlt} />
+				<meta name="twitter:card" content="summary_large_image" />
+				<meta name="twitter:image" content={ogImageUrl} />
+				<meta name="twitter:image:alt" content={ogImageAlt} />
+			</>
+		)}
+		{canonical && <link rel="canonical" href={canonicalUrl} />}
+		{canonical && <link rel="alternate" hreflang={brand ? 'id' : lang} href={canonicalUrl} />}
+		{canonical && !brand && isTranslationPair && <link rel="alternate" hreflang={otherLang} href={otherLangUrl} />}
+		{canonical && <link rel="alternate" hreflang="x-default" href={defaultLangUrl} />}
+		<title>{title}</title>
+		{jsonLdText && <script type="application/ld+json" set:html={jsonLdText} />}
+		{/* Google AdSense (src/lib/ads.ts): the loader plus the account meta tag
+		    Google uses to verify site ownership. Off on staging (PUBLIC_ADS=off). */}
+		{ADS_ENABLED && <meta name="google-adsense-account" content={ADSENSE_CLIENT} />}
+		{ADS_ENABLED && (
+			<script async is:inline src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`} crossorigin="anonymous" />
+		)}
+		{/* Canonical snippet, verbatim across every site on this Matomo instance
+		    -- see ~/Documents/Projekte/matomo/docs/tracking-standard.md. Cookie-free
+		    (disableCookies) means no consent banner is legally required (TDDDG
+		    §25); IP anonymization is a server-side instance setting, already on
+		    for this Matomo instance, not something this snippet configures. Do
+		    not add methods beyond this exact set -- an invalid tracker method
+		    (e.g. setAnonymizeIp, which doesn't exist in the Matomo 5 JS tracker)
+		    throws and silently kills the whole _paq queue, including
+		    trackPageView, on every page. */}
+		{/* Production builds only: `astro dev` must never send hits (the
+		    tracking standard forbids it; dev sessions once made up 85% of all
+		    recorded actions). The staging build (scripts/deploy-staging.sh in
+		    the private monorepo) additionally sets PUBLIC_ANALYTICS=off so
+		    internal previews never count as visits. On top of that the tracker
+		    only starts on the production hostname, so a local `astro preview`
+		    of a production build (localhost) isn't counted either; without
+		    window._paq every trackEvent/_paq?.push call is a no-op. */}
+		{import.meta.env.PROD && import.meta.env.PUBLIC_ANALYTICS !== 'off' && <script is:inline define:vars={{ matomoUrl: MATOMO_URL, siteId: MATOMO_SITE_ID, hosts: MATOMO_HOSTS }}>
+			if (hosts.indexOf(location.hostname) !== -1) {
+				var _paq = (window._paq = window._paq || []);
+				_paq.push(['disableCookies']);
+				_paq.push(['enableHeartBeatTimer']);
+				_paq.push(['trackPageView']);
+				_paq.push(['enableLinkTracking']);
+				(function () {
+					_paq.push(['setTrackerUrl', matomoUrl + 'matomo.php']);
+					_paq.push(['setSiteId', siteId]);
+					var d = document,
+						g = d.createElement('script');
+					g.async = true;
+					g.src = matomoUrl + 'matomo.js';
+					d.head.appendChild(g);
+				})();
+			}
+		</script>}
+	</head>
+	<body>
+		<a class="skip-link" href="#main">{skipLabel}</a>
+		<Nav ctaHref={ctaHref} />
+		<main id="main">
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>

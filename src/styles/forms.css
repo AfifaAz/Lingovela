@@ -1,0 +1,315 @@
+/* Form controls — the one control language for the website and the
+   community board. Tokens live in tokens.css (--field-*, --check-*,
+   --form-*); the board receives this file verbatim through
+   packages/community/scripts/sync-tokens.sh, so change it here only.
+
+   Markup contract (opt-in classes, nothing here restyles a bare <input>):
+     <form class="form-stack">                      vertical rhythm
+       <div class="field [field-invalid]">           label + control + help
+         <label for=…>  <input|select|textarea>
+         <p class="field-hint">  <p class="field-error">
+       <div class="field field-check">               checkbox/radio + label
+         <input type="checkbox|radio"> <label>
+       <div class="field-row">                       two columns from 40rem
+       <div class="form-actions"> <button class="btn btn-primary">
+     .form-card                                      bordered surface
+   Native elements stay native (keyboard, screen readers, autofill); only
+   their look is replaced. */
+
+/* --- Layout --- */
+
+.form-stack {
+	display: grid;
+	gap: var(--form-gap);
+}
+.form-card {
+	max-width: var(--form-measure);
+	background: var(--ground-page);
+	border: 1px solid var(--line);
+	border-radius: var(--r-lg);
+	padding: clamp(var(--sp-md), 5vw, var(--sp-xl));
+}
+.field-row {
+	display: grid;
+	gap: var(--form-gap);
+}
+@media (min-width: 40rem) {
+	.field-row {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+.form-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--sp-sm);
+	margin-top: var(--sp-xs);
+}
+
+/* --- Field: label, control, help, error --- */
+
+.field {
+	display: grid;
+	gap: 6px;
+	min-width: 0;
+	border: 0;
+	padding: 0;
+	margin: 0;
+}
+.field > label,
+.field > legend {
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--ink);
+	padding: 0;
+}
+.field-hint {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--ink-muted);
+}
+.field-error {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1.5;
+	color: var(--error);
+}
+/* A drawn "!" badge: the error never relies on colour alone. */
+/* display:flex above would otherwise beat the [hidden] attribute. */
+.field-error[hidden] {
+	display: none;
+}
+.field-error::before {
+	content: '!';
+	flex: none;
+	display: inline-grid;
+	place-items: center;
+	width: 1.15em;
+	height: 1.15em;
+	margin-top: 0.17em;
+	border-radius: 50%;
+	background: var(--error);
+	color: var(--ground-page);
+	font-size: 0.85em;
+	font-weight: 700;
+	line-height: 1;
+}
+
+/* --- Text inputs, select, textarea --- */
+
+.field input:not([type='checkbox'], [type='radio'], [type='hidden'], [type='file'], [type='range']),
+.field select,
+.field textarea {
+	display: block;
+	width: 100%;
+	min-height: var(--field-h);
+	padding: 0.625rem var(--field-pad-x);
+	font-family: var(--font-sans);
+	font-size: 1rem;
+	line-height: 1.5;
+	color: var(--ink);
+	background-color: var(--field-bg);
+	border: var(--field-border-w) solid var(--field-border);
+	border-radius: var(--field-radius);
+	appearance: none;
+	transition:
+		border-color 0.15s ease,
+		background-color 0.15s ease;
+}
+.field textarea {
+	min-height: calc(var(--field-h) * 3);
+	resize: vertical;
+}
+.field select {
+	padding-right: calc(var(--field-pad-x) * 2 + 12px);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2378746b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right var(--field-pad-x) center;
+	background-size: 12px 8px;
+	cursor: pointer;
+}
+.field input::placeholder,
+.field textarea::placeholder {
+	color: var(--field-placeholder);
+	opacity: 1;
+}
+.field input:not([type='checkbox'], [type='radio']):hover,
+.field select:hover,
+.field textarea:hover {
+	border-color: var(--field-border-hover);
+}
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+	border-color: var(--field-border-focus);
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled {
+	background-color: var(--field-bg-disabled);
+	border-style: dashed;
+	color: var(--ink-muted);
+	cursor: not-allowed;
+}
+.field-invalid input:not([type='checkbox'], [type='radio']),
+.field-invalid select,
+.field-invalid textarea {
+	border-color: var(--error);
+	background-color: var(--field-error-bg);
+}
+.field-invalid input:focus-visible,
+.field-invalid select:focus-visible,
+.field-invalid textarea:focus-visible {
+	outline-color: var(--error);
+}
+
+/* --- Checkbox and radio: native inputs, drawn box --- */
+
+.field-check {
+	grid-template-columns: var(--check-size) 1fr;
+	column-gap: 12px;
+	row-gap: 4px;
+	align-items: start;
+}
+.field-check > label {
+	font-weight: 400;
+	cursor: pointer;
+	/* The label is the touch target: at least 44px tall together with the box. */
+	min-height: 2.75rem;
+	padding-block: 0.6rem;
+	margin-block: -0.6rem;
+}
+.field-check > .field-error,
+.field-check > .field-hint {
+	grid-column: 2;
+}
+.field input[type='checkbox'],
+.field input[type='radio'] {
+	appearance: none;
+	flex: none;
+	font-size: 1rem;
+	display: grid;
+	place-content: center;
+	width: var(--check-size);
+	height: var(--check-size);
+	/* Centre the box on the label's first line (line-height 1.7 of body). */
+	margin: calc((1.7em - var(--check-size)) / 2) 0 0;
+	background: var(--field-bg);
+	border: var(--field-border-w) solid var(--field-border);
+	border-radius: var(--check-radius);
+	cursor: pointer;
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease;
+}
+.field input[type='radio'] {
+	border-radius: 50%;
+}
+.field input[type='checkbox']::before {
+	content: '';
+	width: 0.36rem;
+	height: 0.66rem;
+	margin-top: -0.12rem;
+	border: solid var(--check-mark);
+	border-width: 0 2.5px 2.5px 0;
+	transform: rotate(45deg) scale(0);
+	transition: transform 0.12s ease;
+}
+.field input[type='radio']::before {
+	content: '';
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--check-mark);
+	transform: scale(0);
+	transition: transform 0.12s ease;
+}
+.field input[type='checkbox']:hover,
+.field input[type='radio']:hover {
+	border-color: var(--field-border-hover);
+}
+.field input[type='checkbox']:checked,
+.field input[type='radio']:checked {
+	background: var(--petrol-deep);
+	border-color: var(--petrol-deep);
+}
+.field input[type='checkbox']:checked::before {
+	transform: rotate(45deg) scale(1);
+}
+.field input[type='radio']:checked::before {
+	transform: scale(1);
+}
+.field input[type='checkbox']:disabled,
+.field input[type='radio']:disabled {
+	background: var(--field-bg-disabled);
+	border-style: dashed;
+	cursor: not-allowed;
+}
+.field-invalid input[type='checkbox'],
+.field-invalid input[type='radio'] {
+	border-color: var(--error);
+}
+
+/* --- Buttons in forms (base .btn lives in tokens.css) --- */
+
+form .btn {
+	min-height: var(--field-h);
+	justify-content: center;
+}
+.btn:disabled,
+.btn[aria-disabled='true'] {
+	opacity: 0.55;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+.btn-block {
+	width: 100%;
+}
+
+/* Small inline spinner for "check running" / "sending" states. */
+.form-spinner {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	border: 2px solid currentColor;
+	border-right-color: transparent;
+	border-radius: 50%;
+	vertical-align: -0.15em;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.form-spinner {
+		animation: form-spin 0.8s linear infinite;
+	}
+}
+@keyframes form-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* --- Notices above a form --- */
+
+.form-notice {
+	display: flex;
+	gap: 10px;
+	align-items: flex-start;
+	padding: 0.75rem 1rem;
+	border-radius: var(--r-md);
+	border: 1px solid var(--line);
+	background: var(--ground-zone);
+	color: var(--ink);
+	font-size: 1rem;
+	line-height: 1.5;
+}
+.form-notice-error {
+	border-color: var(--error);
+	background: var(--field-error-bg);
+}

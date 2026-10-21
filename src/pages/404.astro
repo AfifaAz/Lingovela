@@ -1,0 +1,39 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+
+const description = 'Halaman yang kamu cari tidak ditemukan. Kembali ke Lingovela untuk belajar bahasa Spanyol.';
+---
+
+<SiteLayout
+	title="Halaman tidak ditemukan — Lingovela"
+	description={description}
+	noindex
+	canonical={false}
+>
+	<section class="not-found">
+		<p class="eyebrow">404 · Halaman tidak ditemukan</p>
+		<h1>Ups, halaman ini belum ada.</h1>
+		<p>Yuk, kembali belajar bahasa Spanyol bersama Lingovela.</p>
+		<a class="btn btn-primary" href="/">Kembali ke beranda</a>
+	</section>
+</SiteLayout>
+
+<style>
+	.not-found {
+		display: grid;
+		justify-items: center;
+		gap: var(--sp-md);
+		min-height: 60vh;
+		padding: var(--sp-3xl) var(--sp-sm);
+		text-align: center;
+	}
+
+	h1 {
+		font-size: clamp(2rem, 5vw, 3.5rem);
+	}
+
+	.not-found > p:not(.eyebrow) {
+		max-width: 34rem;
+		color: var(--ink-muted);
+	}
+</style>

@@ -1,0 +1,154 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer" id="footer">
+	<div class="foot-inner">
+		<p class="foot-lockup"><span class="foot-word">lingovela</span></p>
+		<p class="foot-tagline">Belajar bahasa Spanyol, satu frasa baru setiap hari.</p>
+		<nav class="foot-nav" aria-label="Navigasi footer">
+			<div class="foot-primary">
+				<a href="#pelajaran">Pelajaran</a>
+				<a href="#tanya-lingo">Tanya Lingo</a>
+				<a href="/">Kembali ke atas</a>
+			</div>
+		</nav>
+		<div class="foot-base">
+			<nav class="foot-legal" aria-label="Informasi">
+				<a href="#top">Ke bagian atas</a>
+			</nav>
+			<p class="foot-rights">© {year} Lingovela</p>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		background: radial-gradient(115% 115% at 50% 27%, var(--hero-0) 0%, var(--hero-34) 34%, var(--hero-62) 62%, var(--hero-100) 100%);
+		color: var(--on-dark-soft);
+		padding: var(--sp-2xl) var(--sp-md) var(--sp-xl);
+		text-align: center;
+	}
+
+	@media print {
+		.site-footer {
+			display: none;
+		}
+	}
+
+	.foot-inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: min(100%, 62rem);
+		margin-inline: auto;
+	}
+
+	.foot-lockup {
+		--cap-ratio: 0.701;
+		--overshoot: 1.32;
+		--gap-ratio: 0.3;
+		--fs: clamp(1.2rem, 6.5vw, 2.5rem);
+		display: flex;
+		align-items: baseline;
+		gap: calc(var(--fs) * var(--cap-ratio) * var(--gap-ratio));
+	}
+
+	.foot-word {
+		font-family: var(--font-serif);
+		font-size: var(--fs);
+		font-weight: 500;
+		line-height: 1;
+		color: var(--on-dark-fill);
+		white-space: nowrap;
+	}
+
+	.foot-tagline {
+		max-width: 32rem;
+		margin-top: var(--sp-xs);
+		color: var(--on-dark-mint);
+		font-size: 1rem;
+		line-height: 1.6;
+	}
+
+	.foot-nav {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--sp-sm);
+		margin-top: var(--sp-lg);
+	}
+
+	.foot-primary {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 2px var(--sp-lg);
+	}
+
+	.foot-nav a {
+		padding: var(--sp-xs) 0;
+		color: var(--on-dark-soft);
+		font-size: 1.125rem;
+		font-weight: 600;
+		text-decoration: none;
+		transition: color 0.15s ease;
+	}
+
+	.foot-nav a:hover {
+		color: var(--on-dark-fill);
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.site-footer a:focus-visible {
+		outline: 2px solid var(--on-dark-soft);
+		outline-offset: 3px;
+	}
+
+	.foot-base {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--sp-sm) var(--sp-md);
+		width: 100%;
+		margin-top: var(--sp-xl);
+		padding-top: var(--sp-md);
+		border-top: 1px solid var(--on-dark-hairline);
+	}
+
+	.foot-legal a,
+	.foot-rights {
+		font-size: 0.875rem;
+		color: var(--on-dark-quietest);
+	}
+
+	.foot-legal a {
+		text-decoration: none;
+	}
+
+	.foot-legal a:hover {
+		color: var(--on-dark-soft);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	@media (max-width: 720px) {
+		.foot-base {
+			flex-direction: column;
+			justify-content: center;
+			gap: var(--sp-sm);
+		}
+	}
+
+	@media (max-width: 520px) {
+		.site-footer {
+			padding: var(--sp-xl) var(--sp-md) var(--sp-lg);
+		}
+
+		.foot-primary {
+			gap: 2px var(--sp-md);
+		}
+	}
+</style>

@@ -1,0 +1,54 @@
+name: Fehler im Baustein / Error in a lesson
+description: Ein Fakt ist falsch, eine Stelle unverständlich, ein Tippfehler oder eine Quelle fehlt. / Something is wrong, unclear, misspelled or unsourced.
+title: "[Fehler] "
+labels: ["inhalt"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du hilfst, die Bausteine besser zu machen! Jede Meldung wird geprüft; wer eine Korrektur auslöst, wird an der Lektion namentlich erwähnt (wenn du das möchtest).
+        Thanks for helping to improve the lessons! Every report is checked; if it leads to a correction, you'll be credited by name on the lesson (if you like).
+
+        Fragen zum Inhalt? → [Community-Forum](https://community.ki-einfach-verstehen.de) · Questions about the content? → [community forum](https://community.ki-einfach-verstehen.de)
+  - type: input
+    id: baustein
+    attributes:
+      label: Baustein / Lesson
+      description: URL oder Titel des Bausteins. / URL or title of the lesson.
+      placeholder: https://ki-einfach-verstehen.de/de/bausteine/tokenizer-ids-vokabular/
+    validations:
+      required: true
+  - type: input
+    id: abschnitt
+    attributes:
+      label: Abschnitt / Section
+      description: Überschrift oder ein kurzes Zitat der Stelle. / Heading or a short quote of the passage.
+      placeholder: "z. B. / e.g. „Leerzeichen und Satzzeichen gehören zur Eingabe“"
+    validations:
+      required: true
+  - type: dropdown
+    id: art
+    attributes:
+      label: Art des Problems / Kind of problem
+      options:
+        - Fakt falsch / Factually wrong
+        - Unverständlich / Unclear
+        - Tippfehler / Typo
+        - Quelle fehlt / Missing source
+        - Sonstiges / Other
+    validations:
+      required: true
+  - type: textarea
+    id: beschreibung
+    attributes:
+      label: Beschreibung / Description
+      description: Was stimmt nicht, und wie wäre es richtig? Belege (Links, Literatur) helfen sehr. / What is wrong, and what would be right? Sources (links, papers) help a lot.
+    validations:
+      required: true
+  - type: input
+    id: credit
+    attributes:
+      label: Nennung / Credit
+      description: Wie möchtest du genannt werden, falls die Meldung zu einer Korrektur führt? Leer lassen für deinen GitHub-Namen, „anonym“ für keine Nennung. / How would you like to be credited if this leads to a correction? Leave empty for your GitHub handle, "anonymous" for no credit.
+    validations:
+      required: false

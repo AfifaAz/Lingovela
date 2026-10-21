@@ -1,0 +1,37 @@
+---
+import PageShell from './PageShell.astro';
+
+interface Props {
+	title: string;
+	description: string;
+	sources?: string[];
+	noindex?: boolean;
+	canonical?: boolean;
+}
+
+const { title, description, sources, noindex, canonical } = Astro.props;
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'WebSite',
+	name: 'Lingovela',
+	url: Astro.site?.href,
+	description,
+	inLanguage: 'id',
+};
+---
+
+<PageShell
+	lang="id"
+	title={title}
+	description={description}
+	otherLangHref="/"
+	ctaHref="#pelajaran"
+	jsonLd={jsonLd}
+	brand="lingovela"
+	hasTranslation={false}
+	sources={sources}
+	noindex={noindex}
+	canonical={canonical}
+>
+	<slot />
+</PageShell>

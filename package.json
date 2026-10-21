@@ -1,0 +1,28 @@
+{
+  "name": "@ki-einfach-verstehen/website",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "predev": "node scripts/build-chatbot-knowledge.mjs",
+    "dev": "node scripts/dev.mjs",
+    "prelint": "node scripts/build-chatbot-knowledge.mjs",
+    "prebuild": "node scripts/build-chatbot-knowledge.mjs",
+    "build": "astro build && node scripts/sitemap-finalize.mjs dist && node scripts/check-search-snippets.mjs dist",
+    "lint": "node --test src/scripts/lingovela-game.test.mjs src/scripts/lingovela-chatbot.test.mjs api/chat.test.mjs scripts/check-search-snippets.test.mjs scripts/sitemap-finalize.test.mjs",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@fontsource/literata": "^5.3.0",
+    "astro": "7.2.1",
+    "dotenv": "^18.0.8"
+  },
+  "devDependencies": {
+    "mammoth": "^1.13.0"
+  }
+}

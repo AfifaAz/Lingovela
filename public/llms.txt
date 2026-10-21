@@ -1,0 +1,12 @@
+# Lingovela
+
+Lingovela adalah situs belajar bahasa Spanyol dengan penjelasan dalam bahasa
+Indonesia. Materi disusun dalam modul dan bab, lalu dipraktikkan melalui kuis.
+
+- [Mulai belajar](https://ki-einfach-verstehen.de/): buka kurikulum dan pilih
+  bab yang sudah terbuka.
+- Materi setiap bab ditampilkan sebelum kuis.
+- Bab selanjutnya terbuka setelah semua soal pada bab sebelumnya dijawab benar.
+- Progres belajar disimpan di browser pengguna.
+
+Kurikulum dan soal kuis tersedia di `src/data/lingovela-curriculum.ts`.

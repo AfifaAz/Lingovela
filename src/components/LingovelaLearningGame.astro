@@ -1,0 +1,426 @@
+---
+import { lingovelaCurriculum } from '../data/lingovela-curriculum';
+
+const questionsJson = (questions: typeof lingovelaCurriculum[number]['chapters'][number]['quiz']) =>
+	JSON.stringify(questions).replace(/</g, '\\u003c');
+const totalChapters = lingovelaCurriculum.reduce((total, module) => total + module.chapters.length, 0);
+---
+
+<section class="section section--zone game-section" id="pelajaran" data-learning-game aria-labelledby="game-title">
+	<div class="wrap">
+		<div class="section-head game-heading">
+			<p class="eyebrow">Jalur belajar Lingovela</p>
+			<h2 id="game-title">Belajar satu bab. Taklukkan kuis. Buka bab berikutnya.</h2>
+			<p class="section-lede">
+				Baca materinya dulu, lalu jawab semua soal dengan benar untuk membuka bab selanjutnya. Progres tersimpan di browser ini.
+			</p>
+		</div>
+
+		<div class="game-status" aria-live="polite">
+			<div class="game-status-copy">
+				<strong>Progres belajarmu</strong>
+				<span data-progress-label>0 dari {totalChapters} bab selesai</span>
+			</div>
+			<div class="game-progress" role="progressbar" aria-label="Progres belajar" aria-valuemin="0" aria-valuemax={totalChapters} aria-valuenow="0">
+				<span data-progress-fill></span>
+			</div>
+			<p class="storage-note" data-storage-note>Simpan progres otomatis di perangkat ini.</p>
+		</div>
+
+		<div class="module-list">
+			{lingovelaCurriculum.map((module, moduleIndex) => (
+				<section class="module-card" data-module={module.id} aria-labelledby={`module-${module.id}`}>
+					<header class="module-header">
+						<span class="module-icon" aria-hidden="true">{module.icon}</span>
+						<div class="module-title">
+							<p class="eyebrow">Modul {String(moduleIndex + 1).padStart(2, '0')}</p>
+							<h3 id={`module-${module.id}`}>{module.title}</h3>
+							<p>{module.description}</p>
+						</div>
+						<span class="module-status" data-module-status>{module.chapters.length} bab</span>
+					</header>
+
+					<ol class="chapter-list">
+						{module.chapters.map((chapter, chapterIndex) => (
+							<li class="chapter-item" data-chapter={chapter.id}>
+								<button
+									class="chapter-trigger"
+									type="button"
+									data-open-chapter
+									disabled={moduleIndex !== 0 || chapterIndex !== 0}
+									aria-expanded="false"
+									aria-controls={`panel-${chapter.id}`}
+								>
+									<span class="chapter-symbol" data-chapter-symbol aria-hidden="true">{moduleIndex === 0 && chapterIndex === 0 ? '◎' : '🔒'}</span>
+									<span class="chapter-trigger-copy">
+										<span class="chapter-title">{chapter.title}</span>
+										<span class="chapter-subtitle">{chapter.subtitle}</span>
+									</span>
+									<span class="chapter-state" data-chapter-state>{moduleIndex === 0 && chapterIndex === 0 ? 'Mulai' : 'Terkunci'}</span>
+								</button>
+
+								<div class="chapter-panel" id={`panel-${chapter.id}`} data-chapter-panel hidden>
+									<div class="lesson-content">
+										<p class="lesson-heading">Materi bab</p>
+										{chapter.lesson.map((paragraph) => <p>{paragraph}</p>)}
+										<div class="example-list" aria-label="Contoh bahasa Spanyol">
+											{chapter.examples.map((example) => (
+												<div class="example">
+													<strong lang="es">{example.spanish}</strong>
+													<span>{example.indonesian}</span>
+												</div>
+											))}
+										</div>
+									</div>
+
+									<div class="chapter-quiz" data-chapter-quiz>
+										<button class="btn btn-primary start-quiz" type="button" data-start-quiz>Mulai kuis bab</button>
+										<div class="quiz-round" data-quiz-round hidden>
+											<div class="quiz-round-head">
+												<p class="eyebrow">Tantangan bab</p>
+												<span class="badge-progress" data-question-progress></span>
+											</div>
+											<div class="quiz-progress" aria-hidden="true"><span data-quiz-progress></span></div>
+											<p class="quiz-question" data-question></p>
+											<div class="quiz-options" data-quiz-options role="group" aria-label="Pilihan jawaban"></div>
+											<p class="quiz-feedback" data-quiz-feedback aria-live="polite"></p>
+											<button class="btn btn-primary submit-answer" type="button" data-submit-answer disabled>Periksa jawaban</button>
+											<button class="btn btn-secondary next-question" type="button" data-next-question hidden>Lanjut</button>
+										</div>
+										<div class="chapter-complete" data-chapter-complete hidden>
+											<span class="complete-star" aria-hidden="true">★</span>
+											<div>
+												<strong>¡Muy bien! Bab selesai.</strong>
+												<p>Semua soal terjawab benar. Bab berikutnya sekarang terbuka.</p>
+											</div>
+											<button class="btn btn-primary next-chapter" type="button" data-next-chapter hidden>Buka bab selanjutnya →</button>
+										</div>
+									</div>
+									<script is:inline type="application/json" data-quiz-data set:html={questionsJson(chapter.quiz)} />
+								</div>
+							</li>
+						))}
+					</ol>
+				</section>
+			))}
+		</div>
+		<p class="game-finish" data-game-finish hidden>¡Felicidades! Semua bab selesai. Kamu sudah menuntaskan jalur dasar bahasa Spanyol. 🎉</p>
+	</div>
+</section>
+
+<script>
+	import {
+		completeLingovelaChapter,
+		emptyLingovelaProgress,
+		getLingovelaProgressSummary,
+		getUnlockedChapterIds,
+		LINGOVELA_PROGRESS_KEY,
+		normalizeLingovelaProgress,
+	} from '../scripts/lingovela-game.js';
+
+	type Question = { question: string; options: string[]; answer: number; explanation: string };
+	const game = document.querySelector<HTMLElement>('[data-learning-game]');
+
+	if (game) {
+		const chapterItems = Array.from(game.querySelectorAll<HTMLElement>('[data-chapter]'));
+		const chapterIds = chapterItems.map((item) => item.dataset.chapter).filter((id): id is string => Boolean(id));
+		const statusLabel = game.querySelector<HTMLElement>('[data-progress-label]');
+		const progressBar = game.querySelector<HTMLElement>('[role="progressbar"]');
+		const progressFill = game.querySelector<HTMLElement>('[data-progress-fill]');
+		const storageNote = game.querySelector<HTMLElement>('[data-storage-note]');
+		const finishMessage = game.querySelector<HTMLElement>('[data-game-finish]');
+		let progress = emptyLingovelaProgress();
+		let activeChapter: HTMLElement | undefined;
+
+		try {
+			const saved = localStorage.getItem(LINGOVELA_PROGRESS_KEY);
+			if (saved) progress = normalizeLingovelaProgress(JSON.parse(saved), chapterIds);
+		} catch {
+			if (storageNote) storageNote.textContent = 'Progres sebelumnya tidak dapat dibaca. Kamu bisa mulai belajar; progres sesi ini mungkin tidak tersimpan.';
+		}
+
+		const renderProgress = () => {
+			const summary = getLingovelaProgressSummary(chapterIds, progress.completed);
+			const unlocked = new Set(getUnlockedChapterIds(chapterIds, progress.completed));
+			if (statusLabel) statusLabel.textContent = `${summary.completed} dari ${summary.total} bab selesai`;
+			if (progressBar) progressBar.setAttribute('aria-valuenow', String(summary.completed));
+			if (progressFill) progressFill.style.width = `${summary.total === 0 ? 0 : (summary.completed / summary.total) * 100}%`;
+			if (finishMessage) finishMessage.hidden = summary.completed !== summary.total;
+
+			for (const item of chapterItems) {
+				const id = item.dataset.chapter;
+				const trigger = item.querySelector<HTMLButtonElement>('[data-open-chapter]');
+				const state = item.querySelector<HTMLElement>('[data-chapter-state]');
+				const symbol = item.querySelector<HTMLElement>('[data-chapter-symbol]');
+				const module = item.closest<HTMLElement>('[data-module]');
+				const moduleChapters = module ? Array.from(module.querySelectorAll<HTMLElement>('[data-chapter]')) : [];
+				const moduleStatus = module?.querySelector<HTMLElement>('[data-module-status]');
+				const done = Boolean(id && progress.completed.includes(id));
+				const canOpen = Boolean(id && unlocked.has(id));
+				if (trigger) {
+					trigger.disabled = !canOpen;
+					trigger.classList.toggle('is-locked', !canOpen);
+					trigger.classList.toggle('is-complete', done);
+					trigger.setAttribute('aria-label', `${done ? 'Selesai' : canOpen ? 'Buka bab' : 'Terkunci'}: ${item.querySelector('.chapter-title')?.textContent ?? ''}`);
+				}
+				if (state) state.textContent = done ? 'Selesai ✓' : canOpen ? 'Mulai' : 'Terkunci';
+				if (symbol) symbol.textContent = done ? '✓' : canOpen ? '◎' : '🔒';
+				if (moduleStatus) {
+					const moduleDone = moduleChapters.every((chapter) => Boolean(chapter.dataset.chapter && progress.completed.includes(chapter.dataset.chapter)));
+					const moduleUnlocked = moduleChapters.some((chapter) => unlocked.has(chapter.dataset.chapter ?? ''));
+					moduleStatus.textContent = moduleDone ? 'Tuntas ✓' : moduleUnlocked ? `${moduleChapters.filter((chapter) => progress.completed.includes(chapter.dataset.chapter ?? '')).length}/${moduleChapters.length} bab` : 'Terkunci';
+				}
+			}
+		};
+
+		const saveProgress = () => {
+			try {
+				localStorage.setItem(LINGOVELA_PROGRESS_KEY, JSON.stringify(progress));
+			} catch {
+				if (storageNote) storageNote.textContent = 'Browser tidak dapat menyimpan progres. Bab tetap bisa dimainkan selama halaman ini terbuka.';
+			}
+		};
+
+		const openChapter = (item: HTMLElement) => {
+			if (activeChapter && activeChapter !== item) {
+				const previousPanel = activeChapter.querySelector<HTMLElement>('[data-chapter-panel]');
+				const previousTrigger = activeChapter.querySelector<HTMLButtonElement>('[data-open-chapter]');
+				if (previousPanel) previousPanel.hidden = true;
+				previousTrigger?.setAttribute('aria-expanded', 'false');
+			}
+			activeChapter = item;
+			const panel = item.querySelector<HTMLElement>('[data-chapter-panel]');
+			const trigger = item.querySelector<HTMLButtonElement>('[data-open-chapter]');
+			if (panel) panel.hidden = false;
+			trigger?.setAttribute('aria-expanded', 'true');
+			item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+		};
+
+		for (const item of chapterItems) {
+			const chapterId = item.dataset.chapter;
+			const trigger = item.querySelector<HTMLButtonElement>('[data-open-chapter]');
+			const startButton = item.querySelector<HTMLButtonElement>('[data-start-quiz]');
+			const round = item.querySelector<HTMLElement>('[data-quiz-round]');
+			const completePanel = item.querySelector<HTMLElement>('[data-chapter-complete]');
+			const questionText = item.querySelector<HTMLElement>('[data-question]');
+			const questionProgress = item.querySelector<HTMLElement>('[data-question-progress]');
+			const questionFill = item.querySelector<HTMLElement>('[data-quiz-progress]');
+			const options = item.querySelector<HTMLElement>('[data-quiz-options]');
+			const feedback = item.querySelector<HTMLElement>('[data-quiz-feedback]');
+			const submit = item.querySelector<HTMLButtonElement>('[data-submit-answer]');
+			const nextQuestion = item.querySelector<HTMLButtonElement>('[data-next-question]');
+			const nextChapter = item.querySelector<HTMLButtonElement>('[data-next-chapter]');
+			const quizData = item.querySelector<HTMLScriptElement>('[data-quiz-data]');
+			const questions = quizData?.textContent ? JSON.parse(quizData.textContent) as Question[] : [];
+			let questionIndex = 0;
+			let selectedAnswer: number | undefined;
+			let questionPassed = false;
+
+			trigger?.addEventListener('click', () => {
+				openChapter(item);
+			});
+
+			startButton?.addEventListener('click', () => {
+				if (questions.length === 0) {
+					if (feedback) feedback.textContent = 'Kuis bab ini belum tersedia.';
+					return;
+				}
+				questionIndex = 0;
+				if (startButton) startButton.hidden = true;
+				if (completePanel) completePanel.hidden = true;
+				if (round) round.hidden = false;
+				renderQuestion();
+			});
+
+			function renderQuestion() {
+				const question = questions[questionIndex];
+				if (!question || !questionText || !options || !submit || !questionProgress || !questionFill) return;
+				selectedAnswer = undefined;
+				questionPassed = false;
+				questionText.textContent = question.question;
+				questionProgress.textContent = `Soal ${questionIndex + 1} dari ${questions.length}`;
+				questionFill.style.width = `${((questionIndex + 1) / questions.length) * 100}%`;
+				if (feedback) {
+					feedback.textContent = '';
+					feedback.dataset.state = '';
+				}
+				if (nextQuestion) nextQuestion.hidden = true;
+				submit.hidden = false;
+				submit.disabled = true;
+				submit.textContent = 'Periksa jawaban';
+				options.replaceChildren();
+				question.options.forEach((label, index) => {
+					const choice = document.createElement('button');
+					choice.className = 'quiz-option';
+					choice.type = 'button';
+					choice.textContent = label;
+					choice.setAttribute('aria-pressed', 'false');
+					choice.addEventListener('click', () => {
+						if (questionPassed) return;
+						selectedAnswer = index;
+						options.querySelectorAll<HTMLButtonElement>('.quiz-option').forEach((option, optionIndex) => {
+							option.setAttribute('aria-pressed', String(optionIndex === index));
+							option.classList.remove('is-wrong');
+						});
+						submit.disabled = false;
+					});
+					options.append(choice);
+				});
+			}
+
+			submit?.addEventListener('click', () => {
+				if (selectedAnswer === undefined || questionPassed) return;
+				const question = questions[questionIndex];
+				if (!question) return;
+				if (selectedAnswer === question.answer) {
+					questionPassed = true;
+					if (feedback) {
+						feedback.dataset.state = 'correct';
+						feedback.textContent = `¡Muy bien! ${question.explanation}`;
+					}
+					if (options) options.querySelectorAll<HTMLButtonElement>('.quiz-option').forEach((option) => { option.disabled = true; });
+					submit.hidden = true;
+					if (nextQuestion) {
+						nextQuestion.hidden = false;
+						nextQuestion.textContent = questionIndex + 1 === questions.length ? 'Tuntaskan bab' : 'Soal berikutnya →';
+					}
+				} else {
+					if (feedback) {
+						feedback.dataset.state = 'incorrect';
+						feedback.textContent = 'Belum tepat. Baca kembali materi bab ini, lalu pilih jawaban lain.';
+					}
+					if (options) {
+						const selected = options.querySelectorAll<HTMLButtonElement>('.quiz-option')[selectedAnswer];
+						selected?.classList.add('is-wrong');
+						if (selected) selected.setAttribute('aria-pressed', 'false');
+					}
+					selectedAnswer = undefined;
+					submit.disabled = true;
+				}
+			});
+
+			nextQuestion?.addEventListener('click', () => {
+				if (questionIndex + 1 < questions.length) {
+					questionIndex += 1;
+					renderQuestion();
+					return;
+				}
+				if (!chapterId) return;
+				progress = completeLingovelaChapter(progress, chapterId, chapterIds);
+				saveProgress();
+				renderProgress();
+				if (round) round.hidden = true;
+				if (completePanel) completePanel.hidden = false;
+				if (startButton) startButton.hidden = true;
+				const nextId = getLingovelaProgressSummary(chapterIds, progress.completed).nextChapterId;
+				if (nextChapter) {
+					nextChapter.hidden = !nextId;
+					nextChapter.onclick = () => {
+						const nextItem = chapterItems.find((candidate) => candidate.dataset.chapter === nextId);
+						if (nextItem) {
+							openChapter(nextItem);
+							nextItem.querySelector<HTMLButtonElement>('[data-start-quiz]')?.focus();
+						}
+					};
+				}
+			});
+		}
+
+		renderProgress();
+	}
+</script>
+
+<style>
+	.game-heading { max-width: 900px; }
+	.game-status {
+		display: grid;
+		grid-template-columns: minmax(180px, auto) minmax(120px, 1fr);
+		gap: 8px var(--sp-md);
+		align-items: center;
+		margin: var(--sp-xl) 0;
+		padding: var(--sp-md);
+		border: 1px solid var(--line);
+		border-radius: var(--r-lg);
+		background: var(--ground-page);
+		box-shadow: 0 6px 24px rgb(63 27 31 / 6%);
+	}
+	.game-status-copy { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-sm); }
+	.game-status-copy strong { color: var(--ink); font-family: var(--font-serif); }
+	.game-status-copy span, .storage-note { color: var(--ink-muted); font-size: .82rem; }
+	.game-progress, .quiz-progress { height: 9px; overflow: hidden; border-radius: var(--r-pill); background: var(--ground-zone); }
+	.game-progress span, .quiz-progress span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--petrol-deep), var(--petrol-viv), var(--amber-viv)); transition: width .35s ease; }
+	.storage-note { grid-column: 1 / -1; margin: 0; }
+	.module-list { display: grid; gap: var(--sp-lg); }
+	.module-card { overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--ground-page); box-shadow: 0 8px 26px rgb(63 27 31 / 5%); }
+	.module-header { display: flex; align-items: center; gap: var(--sp-md); padding: var(--sp-md); border-bottom: 1px solid var(--line); }
+	.module-icon { display: grid; flex: 0 0 52px; width: 52px; height: 52px; place-items: center; border-radius: var(--r-md); background: var(--amber-soft); font-size: 1.6rem; }
+	.module-title { min-width: 0; flex: 1; }
+	.module-title .eyebrow { margin-bottom: 4px; }
+	.module-title h3 { margin: 0; color: var(--ink); font-family: var(--font-serif); font-size: 1.35rem; }
+	.module-title > p:last-child { margin: 4px 0 0; color: var(--ink-muted); font-size: .9rem; line-height: 1.5; }
+	.module-status { flex: 0 0 auto; padding: 5px 11px; border-radius: var(--r-pill); background: var(--ground-zone); color: var(--petrol-deep); font-size: .8rem; font-weight: 600; }
+	.chapter-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+	.chapter-item + .chapter-item { border-top: 1px solid var(--line); }
+	.chapter-trigger { display: flex; width: 100%; min-height: 74px; align-items: center; gap: var(--sp-sm); padding: 12px var(--sp-md); border: 0; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+	.chapter-trigger:not(:disabled):hover { background: var(--petrol-soft); }
+	.chapter-trigger:disabled { color: var(--ink-muted); cursor: not-allowed; }
+	.chapter-trigger.is-locked .chapter-title { color: var(--ink-muted); }
+	.chapter-symbol { display: grid; flex: 0 0 36px; width: 36px; height: 36px; place-items: center; border: 1px solid var(--line-deep); border-radius: 50%; color: var(--petrol-deep); font-size: 1.05rem; font-weight: 700; }
+	.chapter-trigger.is-complete .chapter-symbol { border-color: var(--success); background: var(--success); color: #fff; }
+	.chapter-trigger-copy { display: grid; flex: 1; gap: 3px; }
+	.chapter-title { font-family: var(--font-serif); font-size: 1rem; font-weight: 700; }
+	.chapter-subtitle { color: var(--ink-muted); font-size: .82rem; line-height: 1.45; }
+	.chapter-state { flex: 0 0 auto; color: var(--petrol-deep); font-size: .78rem; font-weight: 600; }
+	.chapter-trigger.is-locked .chapter-state { color: var(--ink-muted); }
+	.chapter-panel { padding: var(--sp-md); border-top: 1px solid var(--line); background: color-mix(in srgb, var(--ground-page) 92%, var(--ground-zone)); }
+	.lesson-content { max-width: 72ch; }
+	.lesson-heading { margin-bottom: var(--sp-xs); color: var(--petrol-deep); font-family: var(--font-serif); font-size: 1.15rem; font-weight: 700; }
+	.lesson-content > p:not(.lesson-heading) { margin-bottom: var(--sp-sm); color: var(--ink-muted); font-size: .95rem; line-height: 1.7; }
+	.example-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-xs); margin: var(--sp-md) 0 var(--sp-lg); }
+	.example { min-height: 86px; padding: 12px; border-left: 3px solid var(--amber-viv); border-radius: 0 var(--r-sm) var(--r-sm) 0; background: var(--amber-soft); }
+	.example strong, .example span { display: block; }
+	.example strong { color: var(--petrol-deep); font-size: .9rem; line-height: 1.45; }
+	.example span { margin-top: 5px; color: var(--ink-muted); font-size: .82rem; line-height: 1.45; }
+	.chapter-quiz { max-width: 760px; padding: var(--sp-md); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--ground-page); }
+	.start-quiz { min-height: 44px; }
+	.quiz-round-head { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-sm); }
+	.quiz-round-head .eyebrow { margin: 0; }
+	.quiz-progress { height: 6px; margin-top: var(--sp-sm); }
+	.quiz-question { margin: var(--sp-md) 0; color: var(--ink); font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700; line-height: 1.4; }
+	.quiz-options { display: grid; gap: 9px; }
+	.quiz-option { min-height: var(--hit-min); padding: 10px 14px; border: 1.5px solid var(--line-deep); border-radius: var(--r-md); background: var(--ground-page); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
+	.quiz-option:hover:not(:disabled), .quiz-option[aria-pressed='true'] { border-color: var(--petrol-viv); background: var(--petrol-soft); }
+	.quiz-option.is-wrong { border-color: var(--error); background: var(--field-error-bg); }
+	.quiz-option:disabled { cursor: default; }
+	.quiz-feedback { min-height: 1.6em; margin: var(--sp-sm) 0; color: var(--ink-muted); font-size: .88rem; font-weight: 600; }
+	.quiz-feedback[data-state='correct'] { color: var(--success); }
+	.quiz-feedback[data-state='incorrect'] { color: var(--error); }
+	.submit-answer:disabled { cursor: not-allowed; opacity: .55; }
+	.next-question { margin-left: 8px; }
+	.chapter-complete { display: flex; align-items: center; gap: var(--sp-sm); flex-wrap: wrap; }
+	.complete-star { color: var(--amber); font-size: 1.8rem; text-shadow: 0 0 18px rgb(255 207 85 / 55%); }
+	.chapter-complete > div { flex: 1; }
+	.chapter-complete strong { color: var(--success); font-family: var(--font-serif); }
+	.chapter-complete p { margin: 3px 0 0; color: var(--ink-muted); font-size: .85rem; }
+	.next-chapter { flex-basis: 100%; }
+	.game-finish { margin: var(--sp-lg) 0 0; padding: var(--sp-md); border: 1px solid var(--amber-viv); border-radius: var(--r-md); background: var(--amber-soft); color: var(--ink); font-family: var(--font-serif); font-weight: 700; text-align: center; }
+	@media (max-width: 760px) {
+		.game-status { grid-template-columns: 1fr; }
+		.game-status-copy { align-items: flex-start; flex-direction: column; gap: 2px; }
+		.game-progress { grid-row: 2; }
+		.storage-note { grid-column: 1; }
+		.module-header { align-items: flex-start; gap: 12px; padding: var(--sp-sm); }
+		.module-icon { flex-basis: 44px; width: 44px; height: 44px; }
+		.module-title h3 { font-size: 1.15rem; }
+		.module-status { margin-left: auto; padding-inline: 8px; font-size: .72rem; }
+		.chapter-trigger { gap: 10px; padding-inline: var(--sp-sm); }
+		.chapter-subtitle { font-size: .78rem; }
+		.chapter-state { font-size: .72rem; }
+		.chapter-panel { padding: var(--sp-sm); }
+		.example-list { grid-template-columns: 1fr; }
+		.example { min-height: auto; }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.game-progress span, .quiz-progress span, .lesson-card { transition: none; }
+	}
+</style>

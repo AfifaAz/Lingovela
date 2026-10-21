@@ -1,0 +1,123 @@
+<header class="hero" id="top">
+	<div class="hero-inner">
+		<div class="hero-copy">
+			<p class="hero-kicker">Belajar bahasa Spanyol · Dijelaskan dalam bahasa Indonesia</p>
+			<h1 class="lockup">
+				<span class="t1">¡Hola!</span>
+				<span class="line2"><em class="t2">Belajar</em> <strong class="t3">Spanyol</strong></span>
+			</h1>
+			<p class="hero-lede">
+				Mulai dari sapaan sederhana sampai percakapan sehari-hari—belajar pelan-pelan, dengan arti dan contoh yang mudah dipahami.
+			</p>
+			<div class="hero-ctas">
+				<a class="btn btn-on-dark-primary" href="#pelajaran">Lihat pelajaran pertama</a>
+				<a class="btn btn-on-dark-secondary" href="#tanya-lingo">Tanya Lingo</a>
+			</div>
+			<p class="hero-howto">Tidak perlu pengalaman. Mulai dari <span lang="es">¡hola!</span> dan lanjut sesuai ritmemu.</p>
+		</div>
+		<div class="mascot-stage">
+			<div class="mascot-glow" aria-hidden="true"></div>
+			<div class="mascot-message" aria-hidden="true"><span>¡Muy bien!</span><small>Hebat sekali!</small></div>
+			<svg class="mascot" viewBox="0 0 260 300" role="img" aria-labelledby="lingo-title">
+				<title id="lingo-title">Lingo si llama, teman belajar bahasa Spanyolmu</title>
+				<ellipse cx="130" cy="273" rx="77" ry="17" fill="#210a10" opacity=".24" />
+				<path d="M82 174c-26 3-43 26-43 59v23c0 15 12 27 27 27h128c15 0 27-12 27-27v-23c0-33-17-56-43-59" fill="#f9e7cb" stroke="#8f503f" stroke-width="5" />
+				<path d="M103 182c0-34 12-54 27-54s27 20 27 54" fill="#f9e7cb" stroke="#8f503f" stroke-width="5" />
+				<path d="M84 93c-18-15-17-64-8-75 9-10 30 16 37 42M176 93c18-15 17-64 8-75-9-10-30 16-37 42" fill="#f9e7cb" stroke="#8f503f" stroke-width="5" stroke-linejoin="round" />
+				<path d="M87 73c-8-16-10-32-9-39 8 8 15 19 20 33M173 73c8-16 10-32 9-39-8 8-15 19-20 33" fill="#eaa49a" />
+				<path d="M69 96c0-39 27-66 61-66s61 27 61 66v34c0 39-27 65-61 65s-61-26-61-65z" fill="#fff4df" stroke="#8f503f" stroke-width="5" />
+				<path d="M91 108c0-7 4-11 9-11s9 4 9 11M151 108c0-7 4-11 9-11s9 4 9 11" fill="none" stroke="#51333a" stroke-width="6" stroke-linecap="round" />
+				<ellipse cx="88" cy="130" rx="11" ry="6" fill="#efa69c" /><ellipse cx="172" cy="130" rx="11" ry="6" fill="#efa69c" />
+				<ellipse cx="130" cy="126" rx="19" ry="13" fill="#f0b8a4" />
+				<path d="M127 122c0-4 6-4 6 0v4h-6z" fill="#68424a" />
+				<path d="M130 128v8m0 0c-7 8-15 3-16 0m16 0c7 8 15 3 16 0" fill="none" stroke="#68424a" stroke-width="2.5" stroke-linecap="round" />
+				<path d="m103 188 19 10-19 11-17-11zm54 0-19 10 19 11 17-11z" fill="#ffcf55" />
+				<circle cx="130" cy="198" r="7" fill="#d63b4a" stroke="#fff4df" stroke-width="2" />
+			</svg>
+			<div class="mascot-note" aria-hidden="true"><span lang="es">¡Vamos!</span> Ayo mulai!</div>
+		</div>
+	</div>
+	<a class="scroll-cue" href="#pelajaran" aria-label="Lanjut ke bagian pelajaran">
+		<svg class="cue-glyph" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M6 9.5 12 15.5 18 9.5" />
+		</svg>
+	</a>
+</header>
+
+<style>
+	.hero {
+		position: relative;
+		overflow: hidden;
+		color: var(--on-dark-fill);
+		background: radial-gradient(115% 115% at 50% 27%, var(--hero-0) 0%, var(--hero-34) 34%, var(--hero-62) 62%, var(--hero-100) 100%);
+	}
+	.hero-inner {
+		display: grid;
+		grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr);
+		gap: clamp(40px, 5vw, 96px);
+		align-items: center;
+		width: var(--shell);
+		min-height: clamp(560px, calc(100svh - 64px - 170px), 900px);
+		margin-inline: auto;
+		padding: clamp(var(--sp-xl), 5vw, 80px) 0 clamp(72px, 6vw, 100px);
+	}
+	.hero-copy { width: min(100%, 660px); min-width: 0; }
+	.hero-kicker {
+		margin-bottom: var(--sp-md);
+		color: var(--on-dark-soft);
+		font-size: .8125rem;
+		font-weight: 500;
+		letter-spacing: .13em;
+		text-transform: uppercase;
+	}
+	.lockup { margin-bottom: var(--sp-md); font-family: var(--font-serif); line-height: .96; }
+	.lockup .t1 { display: block; color: #fbfaf7; font-size: clamp(3.4rem, 5.7vw, 6.4rem); font-weight: 800; }
+	.lockup .line2 { display: block; white-space: nowrap; }
+	.lockup .t2 { margin-right: .14em; color: #ffd9a8; font-size: clamp(2.05rem, 3.45vw, 3.85rem); font-weight: 600; }
+	.lockup .t3 { color: #fbfaf7; font-size: clamp(2.05rem, 3.45vw, 3.85rem); font-weight: 700; }
+	.hero-lede { max-width: 34rem; margin-bottom: var(--sp-lg); color: var(--on-dark-mint); font-size: 1.125rem; line-height: 1.65; }
+	.hero-ctas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-sm); }
+	.hero-howto { margin-top: var(--sp-md); color: var(--on-dark-soft); font-size: 1rem; line-height: 1.5; }
+	.hero-howto span { color: #ffd05a; font-weight: 700; }
+	.mascot-stage { position: relative; display: grid; place-items: center; width: min(100%, clamp(420px, 39vw, 700px)); aspect-ratio: 1; justify-self: end; }
+	.mascot-glow { position: absolute; inset: 6%; border-radius: 50%; background: radial-gradient(circle, rgb(255 207 85 / 17%) 0, rgb(239 83 96 / 16%) 37%, transparent 70%); filter: blur(12px); }
+	.mascot { position: relative; z-index: 1; width: min(72%, 320px); overflow: visible; filter: drop-shadow(0 20px 26px rgb(0 0 0 / 24%)); animation: lingo-float 3.8s ease-in-out infinite; }
+	.mascot-message, .mascot-note {
+		position: absolute;
+		z-index: 2;
+		padding: 12px 16px;
+		border: 1px solid rgb(255 255 255 / 55%);
+		border-radius: var(--r-md);
+		background: rgb(255 250 244 / 94%);
+		color: #38121b;
+		box-shadow: 0 8px 30px rgb(0 0 0 / 18%);
+	}
+	.mascot-message { top: 16%; right: 0; animation: lingo-card 4.6s ease-in-out infinite; }
+	.mascot-message span, .mascot-message small { display: block; }
+	.mascot-message span { color: var(--petrol-deep); font-weight: 700; }
+	.mascot-message small { color: #665258; }
+	.mascot-note { bottom: 15%; left: 2%; animation: lingo-card 4.6s ease-in-out -2.3s infinite; }
+	.mascot-note span { color: var(--petrol-deep); font-weight: 700; }
+	.scroll-cue { position: absolute; bottom: 18px; left: 50%; padding: 8px; color: var(--on-dark-soft); transform: translateX(-50%); }
+	.cue-glyph { display: block; }
+	@keyframes lingo-float { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-12px) rotate(1deg); } }
+	@keyframes lingo-card { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+	@media (max-width: 980px) {
+		.hero-inner { position: relative; grid-template-columns: 1fr; gap: 0; min-height: 0; padding-top: var(--sp-xl); padding-bottom: 145px; }
+		.hero-copy { position: relative; z-index: 2; width: min(100%, 44rem); }
+		.mascot-stage { position: absolute; right: -8%; bottom: -19%; width: min(52vw, 360px); opacity: .82; pointer-events: none; }
+		.lockup .line2 { white-space: normal; }
+	}
+	@media (max-width: 520px) {
+		.hero-inner { gap: var(--sp-md); padding-top: var(--sp-lg); padding-bottom: 120px; }
+		.hero-kicker { letter-spacing: .1em; }
+		.hero-ctas { align-items: stretch; flex-direction: column; }
+		.hero-ctas .btn { justify-content: center; text-align: center; }
+		.mascot-stage { right: -22%; bottom: -17%; width: min(78vw, 300px); }
+		.mascot-message { right: 11%; }
+		.mascot-note { left: -5%; }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.mascot, .mascot-message, .mascot-note { animation: none; }
+	}
+</style>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ki-einfach-verstehen.de/sitemap-index.xml
